@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Diwali Showcase</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.js"></script>
+    <style>
+        body { margin: 0; }
+        .instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        Point your camera at the marker to see the virtual diya.
+    </div>
+    <a-scene embedded arjs>
+        <!-- Marker for displaying the AR content (use Hiro marker as default) -->
+        <a-marker preset="hiro">
+            <!-- 3D model of a diya -->
+            <a-entity 
+                geometry="primitive: cone; height: 0.5; radiusBottom: 0.3" 
+                material="color: #ff5722; opacity: 0.9" 
+                position="0 0.5 0">
+            </a-entity>
+            <!-- Adding a light to simulate the diya flame -->
+            <a-light type="point" color="#ffd700" intensity="2" position="0 1 0"></a-light>
+        </a-marker>
+        <a-entity camera></a-entity>
+    </a-scene>
+</body>
+</html>
