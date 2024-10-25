@@ -4,38 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Diwali Showcase</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.2/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; }
-        .instructions {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 16px;
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3e5f5; }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
+        #nameInput { margin-bottom: 10px; }
+        #videoElement { width: 100%; border-radius: 10px; display: none; }
+        .greeting {
+            font-size: 24px;
+            color: #d32f2f;
+            font-weight: bold;
+            display: none;
+        }
+        #canvas { display: none; }
     </style>
 </head>
 <body>
-    <div class="instructions">
-        Point your camera at the marker to see the virtual diya.
+    <div class="container">
+        <div id="nameForm">
+            <label for="nameInput">Enter your name: </label>
+            <input type="text" id="nameInput" placeholder="Your name">
+            <button onclick="startFaceDetection()">Submit</button>
+        </div>
+        <div class="greeting" id="greetingMessage"></div>
+        <video id="videoElement" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
     </div>
-    <a-scene embedded arjs>
-        <!-- Marker for displaying the AR content (use Hiro marker as default) -->
-        <a-marker preset="hiro">
-            <!-- 3D model of a diya -->
-            <a-entity 
-                geometry="primitive: cone; height: 0.5; radiusBottom: 0.3" 
-                material="color: #ff5722; opacity: 0.9" 
-                position="0 0.5 0">
-            </a-entity>
-            <!-- Adding a light to simulate the diya flame -->
-            <a-light type="point" color="#ffd700" intensity="2" position="0 1 0"></a-light>
-        </a-marker>
-        <a-entity camera></a-entity>
-    </a-scene>
+
+    <script>
+        let video = document.getElementById('videoElement');
+        let canvas = document.getElementById('canvas');
+        let greetingMessage = document.getElementById('greetingMessage');
+
+        function startFaceDetection() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (name === '') {
+                alert('Please enter your name.');
+                return;
+            }
+
+            // Hide the input form and show the video feed
+            document.getElementById('nameForm').style.display = 'none';
+            video.style.display = 'block';
+            greetingMessage.innerText = `Hi ${name}, please smile for the camera! 😊`;
+            greetingMessage.style.display = 'block';
+
+            // Start accessing the user's camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        setTimeout(capturePhoto, 5000); // Simulate waiting for a smile
+                    };
+                })
+                .catch(error => {
+                    alert('Unable to access the camera. Please check your permissions.');
+                });
+        }
+
+        function capturePhoto() {
+            // Draw the current video frame onto the canvas
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Stop the video stream
+            let stream = video.srcObject;
+            let tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+
+            // Hide the video element and show the captured photo
+            video.style.display = 'none';
+            const dataUrl = canvas.toDataURL('image/png');
+
+            // Display the Diwali wish
+            greetingMessage.innerHTML = `
+                <img src="${dataUrl}" alt="Captured photo" style="width: 100%; border-radius: 10px; margin-top: 10px;">
+                <br>
+                Happy Diwali, ${document.getElementById('nameInput').value}! 🎆✨
+                <br>May your life be as bright as this Diwali!
+            `;
+            greetingMessage.style.color = '#ff4081';
+        }
+    </script>
 </body>
 </html>
